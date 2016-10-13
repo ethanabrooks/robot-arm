@@ -2,7 +2,9 @@
 <package>
   <name>arduino</name>
   <version>0.0.0</version>
-  <description>Package for sending commands to robot arm through Arduino</description>
+  <description>
+    Package for sending commands to robot arm through Arduino
+  </description>
 
   <maintainer email="ethanbro@seas.upenn.edu">Ethan Brooks</maintainer>
   <maintainer email="witho@seas.upenn.edu">Brad Thompson</maintainer>
