@@ -18,36 +18,38 @@ class MoveAction(object):
             move_arm.msg.MoveAction,
             execute_cb=self.execute_cb,
             auto_start=False)  # TODO: can we make this true and get rid of next line?
+        print("Start server...")
         self._as.start()
 
     def execute_cb(self, goal):
+        print("Execute callback...")
         # helper variables
+        print(rospy.get_param_names())
         num_joints, port, baudrate = (rospy.get_param(param) for param in
                                       ["/num_joints", "/port", "/baudrate"])
 
-        torques_string = ' '.join(goal.torques)  # TODO: configure
-        assert len(goal.torques) == num_joints, \
+        angles_string = ' '.join(map(str, goal.angles))
+        assert len(goal.angles) == num_joints, \
             "%s should have %d values (num_joints)" % \
-            (torques_string, num_joints)
+            (angles_string, num_joints)
         rate = rospy.Rate(10)
         success = True
 
         with serial.Serial(port=port, baudrate=baudrate) as ser:
-            ser.write(torques_string)
+            ser.write(angles_string)
 
             # append the seeds for the fibonacci sequence
             self._feedback.sequence = ser.readline()
 
         # publish info to the console for the user
-        rospy.loginfo('%s: passing the following torques to arduino: %s' %
-                      (self._action_name, torques_string))
-
+        rospy.loginfo('%s: passing the following angles to arduino: %s' %
+                      (self._action_name, angles_string))
 
         # publish the feedback
-        self._as.publish_feedback(self._feedback)
+        self._as.publish_feedback([3, 3, 3, 3])  # TODO: self._feedback)
 
         if success:
-            self._result.sequence = self._feedback.sequence
+            self._result.sequence = [7, 7, 7, 7]  # TODO: self._feedback.sequence
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 

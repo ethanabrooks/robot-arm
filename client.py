@@ -21,11 +21,13 @@ def get_torques():
 def move_arm_client():
     # Creates the SimpleActionClient, passing the type of the action
     # (FibonacciAction) to the constructor.
+    print("Creating client...")
     client = actionlib.SimpleActionClient('move_arm',
                                           move_arm.msg.MoveAction)
 
     # Waits until the action server has started up and started
     # listening for goals.
+    print("Waiting for server...")
     client.wait_for_server()
 
     # Creates a goal to send to the action server.
