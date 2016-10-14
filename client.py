@@ -1,8 +1,12 @@
 #! /usr/bin/env python
 import rospy
 import actionlib
+import serial
+from move_arm.msg import *
+
 
 NUM_JOINTS = 4
+
 
 def get_torques():
     print("Enter %d torques, separated by spaces: " % NUM_JOINTS)
@@ -18,7 +22,7 @@ def move_arm_client():
     # Creates the SimpleActionClient, passing the type of the action
     # (FibonacciAction) to the constructor.
     client = actionlib.SimpleActionClient('move_arm',
-            actionlib_tutorials.msg.FibonacciAction) # TODO: update msg format
+                                          move_arm.msg.MoveAction)
 
     # Waits until the action server has started up and started
     # listening for goals.
@@ -26,7 +30,7 @@ def move_arm_client():
 
     # Creates a goal to send to the action server.
     torques = get_torques()
-    goal = actionlib_tutorials.msg.MoveGoal(torques)
+    goal = move_arm.msg.MoveGoal(torques)
 
     # Sends the goal to the action server.
     client.send_goal(goal)
@@ -35,7 +39,8 @@ def move_arm_client():
     client.wait_for_result()
 
     # Prints out the result of executing the action
-    return client.get_result()  
+    return client.get_result()
+
 
 if __name__ == '__main__':
     try:
