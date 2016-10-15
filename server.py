@@ -39,17 +39,17 @@ class MoveAction(object):
             ser.write(angles_string)
 
             # append the seeds for the fibonacci sequence
-            self._feedback.sequence = ser.readline()
+            self._feedback.angles = [3, 3, 3, 3]  # TODO: ser.readline()
 
         # publish info to the console for the user
         rospy.loginfo('%s: passing the following angles to arduino: %s' %
                       (self._action_name, angles_string))
 
         # publish the feedback
-        self._as.publish_feedback([3, 3, 3, 3])  # TODO: self._feedback)
+        self._as.publish_feedback(self._feedback)
 
         if success:
-            self._result.sequence = [7, 7, 7, 7]  # TODO: self._feedback.sequence
+            self._result.angles = [7, 7, 7, 7]  # TODO: self._feedback.angles
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 
