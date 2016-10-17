@@ -4,9 +4,7 @@ import actionlib
 import serial
 from move_arm.msg import *
 
-
 NUM_JOINTS = 4
-
 
 def get_torques():
     print("Enter %d torques, separated by spaces: " % NUM_JOINTS)
