@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 from __future__ import print_function
-import rospy
-import actionlib
+
 import serial
+
+import actionlib
+import rospy
 from move_arm.msg import *
 
 
@@ -24,7 +26,6 @@ class MoveAction(object):
     def execute_cb(self, goal):
         print("Execute callback...")
         # helper variables
-        print(rospy.get_param_names())
         num_joints, port, baudrate = (rospy.get_param(param) for param in
                                       ["/num_joints", "/port", "/baudrate"])
 
@@ -35,11 +36,17 @@ class MoveAction(object):
         rate = rospy.Rate(10)
         success = True
 
-        with serial.Serial(port=port, baudrate=baudrate) as ser:
-            ser.write(angles_string)
+        with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
 
-            # append the seeds for the fibonacci sequence
-            self._feedback.angles = [3, 3, 3, 3]  # TODO: ser.readline()
+            # open read/write way string buffer
+            # sio = serial.io.TextIOWrapper(serial.io.BufferedRWPair(ser, ser))
+
+            ser.write(unicode(angles_string))
+
+        with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
+            read = ser.readline()
+            print("read: " + read)
+            # self._feedback.angles = map(float, read.split())
 
         # publish info to the console for the user
         rospy.loginfo('%s: passing the following angles to arduino: %s' %
@@ -49,7 +56,7 @@ class MoveAction(object):
         self._as.publish_feedback(self._feedback)
 
         if success:
-            self._result.angles = [7, 7, 7, 7]  # TODO: self._feedback.angles
+            self._result.angles = self._feedback.angles
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 

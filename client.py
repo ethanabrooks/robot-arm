@@ -4,7 +4,8 @@ import actionlib
 import serial
 from move_arm.msg import *
 
-NUM_JOINTS = 4
+NUM_JOINTS = rospy.get_param('num_joints')
+
 
 def get_torques():
     print("Enter %d torques, separated by spaces: " % NUM_JOINTS)
@@ -29,7 +30,7 @@ def move_arm_client():
     client.wait_for_server()
 
     # Creates a goal to send to the action server.
-    torques = get_torques()
+    torques = [1, 1, 1, 1]  # TODO get_torques()
     goal = move_arm.msg.MoveGoal(torques)
 
     # Sends the goal to the action server.
