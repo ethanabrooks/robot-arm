@@ -39,13 +39,14 @@ class MoveAction(object):
         with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
 
             # open read/write way string buffer
-            # sio = serial.io.TextIOWrapper(serial.io.BufferedRWPair(ser, ser))
+            sio = serial.io.TextIOWrapper(serial.io.BufferedRWPair(ser, ser))
 
             ser.write(unicode(angles_string))
 
-        with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
-            read = ser.readline()
-            print("read: " + read)
+        # with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
+        #     print("Waiting for Arduino input...")
+        #     read = ser.readline()
+        #     print("read: " + read)
             # self._feedback.angles = map(float, read.split())
 
         # publish info to the console for the user
