@@ -29,29 +29,20 @@ class MoveAction(object):
         num_joints, port, baudrate = (rospy.get_param(param) for param in
                                       ["/num_joints", "/port", "/baudrate"])
 
-        angles_string = ' '.join(map(str, goal.angles))
+        message = ' '.join(map(str, goal.angles)) + '\n'
         assert len(goal.angles) == num_joints, \
-            "%s should have %d values (num_joints)" % \
-            (angles_string, num_joints)
+            '%s should have %d values (num_joints)' % \
+            (message, num_joints)
         rate = rospy.Rate(10)
         success = True
 
-        with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
+        # TODO: move motors.
 
-            # open read/write way string buffer
-            sio = serial.io.TextIOWrapper(serial.io.BufferedRWPair(ser, ser))
-
-            ser.write(unicode(angles_string))
-
-        # with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
-        #     print("Waiting for Arduino input...")
-        #     read = ser.readline()
-        #     print("read: " + read)
-            # self._feedback.angles = map(float, read.split())
+        self._feedback.angles = map(float, feedback.split())
 
         # publish info to the console for the user
         rospy.loginfo('%s: passing the following angles to arduino: %s' %
-                      (self._action_name, angles_string))
+                      (self._action_name, message))
 
         # publish the feedback
         self._as.publish_feedback(self._feedback)

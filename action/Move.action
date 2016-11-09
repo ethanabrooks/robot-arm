@@ -1,8 +1,8 @@
 # goal: motor torques for each joint
-int32[] angles
+float32[] angles
 ---
 # result: angles for each joint
-int32[] angles
+float32[] angles
 ---
 # feedback: angles for each joint
-int32[] angles
+float32[] angles
