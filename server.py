@@ -40,9 +40,8 @@ class MoveAction(object):
 
         self._feedback.angles = map(float, feedback.split())
             # open read/write way string buffer
-            sio = serial.io.TextIOWrapper(serial.io.BufferedRWPair(ser, ser))
 
-            ser.write(unicode(angles_string))
+        ser.write(unicode(angles_string))
 
         # with serial.Serial(port=port, baudrate=baudrate, timeout=1) as ser:
         #     print("Waiting for Arduino input...")
