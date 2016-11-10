@@ -15,10 +15,11 @@ def get_user_input(joint_range):
     user_input = raw_input()
     try:
         angles = [float(angle)# * math.pi / 180.0
-                for angle in user_input.split(',')]
+                for angle in user_input.split(' ')]
         for angle in angles:
             low, high = joint_range
             assert(low <= angle <= high)
+
         assert(len(angles) == len(JOINT_RANGE))
     except (ValueError, AssertionError):
         print('"%s" is not a valid input. ' % user_input)

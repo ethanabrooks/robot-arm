@@ -1,3 +1,6 @@
-num_joints: 4
-port: '/dev/ttyACM0'
-baudrate: 9600
+num_joints: 6
+baudrate: 1000000
+devicename: '/dev/ttyUSB0'
+deviceids: [1, 2, 3, 4, -1, -1]
+encoderres: [4096, 1024, 1024, 1024, 0, 0]
+jointrange: [[0, 250.92], [0, 300], [0, 300], [0, 300], [0, 0], [0, 0]]
