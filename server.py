@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 from __future__ import print_function
+from os.path import expanduser
 
 import serial
 import os
@@ -25,9 +26,9 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-os.sys.path.append('/home/servicerobot3/DynamixelSDK/python/dynamixel_functions_py')             # Path setting
+os.sys.path.append(expanduser('~') + '/DynamixelSDK/python/dynamixel_functions_py')             # Path setting
 import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK library
-import dynamixelDefs
+#import dynamixelDefs
 
 class MoveAction(object):
     # create messages that are used eto publish feedback/result
@@ -163,11 +164,11 @@ class MoveAction(object):
                     print("Dynamixel %i write success", DXL_ID)
 
         # Disable Dynamixel Torque
-        dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE)
-        if dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION) != COMM_SUCCESS:
-            dynamixel.printTxRxResult(PROTOCOL_VERSION, dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION))
-        elif dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION) != 0:
-            dynamixel.printRxPacketError(PROTOCOL_VERSION, dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION))
+        # dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE)
+        # if dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION) != COMM_SUCCESS:
+         #   dynamixel.printTxRxResult(PROTOCOL_VERSION, dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION))
+        # elif dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION) != 0:
+         #   dynamixel.printRxPacketError(PROTOCOL_VERSION, dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION))
 
 
         # Close port
