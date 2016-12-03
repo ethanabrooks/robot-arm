@@ -1,0 +1,9 @@
+<launch>
+  <!-- local machine already has a definition by default.
+       This tag overrides the default definition with
+       specific ROS_ROOT and ROS_PACKAGE_PATH values -->
+  <!-- a basic listener node -->
+  <node name="move_arm" pkg="move_arm" type="subscriber.py" output="screen"/>
+  <!-- pass args to the listener node -->
+  <rosparam command="load" file="$(find move_arm)/params.yaml" />
+</launch>
