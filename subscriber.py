@@ -59,8 +59,8 @@ class SerialComm():
         # Set the port path
         # Get methods and members of PortHandlerLinux or PortHandlerWindows
 
-        self.num_joints, self.devicename, self.baudrate, self.ids, self.res, self.jointrange = (
-            rospy.get_param(param) for param in ["/num_joints", "/port", "/baudrate", "/deviceids", "/encoderres", "/jointrange"])
+        self.num_joints, self.devicename, self.baudrate, self.ids, self.res, self.jointrange, self.directions = (
+            rospy.get_param(param) for param in ["/num_joints", "/port", "/baudrate", "/deviceids", "/encoderres", "/jointrange", "/directions"])
 
         devicenameUTF8 = "/dev/ttyUSB0".encode('utf-8')
 
@@ -108,7 +108,9 @@ class SerialComm():
 
 
     def MoveMotors(self, msg):
-        goal = [(x * 180 / 3.14159) % 360 for x in msg.position]
+        position = [x + o for (x, o) 
+                in zip(msg.position, rospy.get_param("/offset"))]
+        goal = [(x * 180 / 3.14159) % 360 for x in position]
         #print(goal)
 
         dxl_comm_result = COMM_TX_FAIL                              # Communication result
@@ -123,6 +125,9 @@ class SerialComm():
             if self.ids[i] != -1:
                 DXL_ID = self.ids[i]
                 dxl_goal_position = int(goal[i] * self.res[i] / (self.jointrange[i][1] - self.jointrange[i][0]))
+
+                if (self.directions[i] == -1):
+                    dxl_goal_position = 360 - dxl_goal_position
 
                 dxl_addparam_result = ctypes.c_ubyte(dynamixel.groupSyncWriteAddParam(self.group_num, DXL_ID, dxl_goal_position, LEN_MX_GOAL_POSITION)).value
 
