@@ -9,6 +9,7 @@ import actionlib
 import rospy
 from move_arm.msg import *
 from std_msgs.msg import String
+from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 
 if os.name == 'nt':
@@ -35,6 +36,7 @@ import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK
 ADDR_MX_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
 ADDR_MX_GOAL_POSITION       = 30
 ADDR_MX_PRESENT_POSITION    = 36
+ADDR_MX_SPEED               = 32
 
 # Protocol version
 PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
@@ -53,6 +55,8 @@ COMM_TX_FAIL                = -1001                         # Communication Tx F
 LEN_MX_GOAL_POSITION        = 2
 LEN_MX_PRESENT_POSITION     = 2
 
+dxl_speed = 100
+
 class SerialComm():
     def Initialize(self):
         # Initialize PortHandler Structs
@@ -65,6 +69,7 @@ class SerialComm():
         devicenameUTF8 = "/dev/ttyUSB0".encode('utf-8')
 
         self.port_num = dynamixel.portHandler(devicenameUTF8)
+        self.gripper_pos = 819
 
         # Initialize PacketHandler Structs
         dynamixel.packetHandler()
@@ -82,6 +87,7 @@ class SerialComm():
             print("Failed to change the baudrate!")
 
         # Initialize Groupsyncwrite instance
+        self.speed = dynamixel.groupSyncWrite(self.port_num, PROTOCOL_VERSION, ADDR_MX_SPEED, LEN_MX_GOAL_POSITION)
         self.group_num = dynamixel.groupSyncWrite(self.port_num, PROTOCOL_VERSION, ADDR_MX_GOAL_POSITION, LEN_MX_GOAL_POSITION)
 
         for i in range(0, self.num_joints):
@@ -108,40 +114,52 @@ class SerialComm():
 
 
     def MoveMotors(self, msg):
-        position = [x + o for (x, o) 
+        position = [x + o for (x, o)
                 in zip(msg.position, rospy.get_param("/offset"))]
         goal = [(x * 180 / 3.14159) % 360 for x in position]
         #print(goal)
 
         dxl_comm_result = COMM_TX_FAIL                              # Communication result
-        dxl_goal_position = [DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE]         # Goal position
 
         dxl_error = 0                                               # Dynamixel error
         dxl_present_position = 0                                    # Present position
 
-        print(msg.header)
+        # print(msg.header)
 
         for i in range(0, self.num_joints):
             if self.ids[i] != -1:
                 DXL_ID = self.ids[i]
-                dxl_goal_position = int(goal[i] * self.res[i] / (self.jointrange[i][1] - self.jointrange[i][0]))
 
+                goalPos = goal[i]
                 if (self.directions[i] == -1):
-                    dxl_goal_position = 360 - dxl_goal_position
+                    goalPos = 360 - goalPos
+
+                dxl_goal_position = int(goalPos * self.res[i] / (self.jointrange[i][1] - self.jointrange[i][0]))
+                if i == 5:
+                    dxl_goal_position = self.gripper_pos
 
                 dxl_addparam_result = ctypes.c_ubyte(dynamixel.groupSyncWriteAddParam(self.group_num, DXL_ID, dxl_goal_position, LEN_MX_GOAL_POSITION)).value
+                #dxl_addparam_speed = ctypes.c_ubyte(dynamixel.groupSyncWriteAddParam(self.speed, DXL_ID, dxl_speed, LEN_MX_GOAL_POSITION)).value
 
                 # Write goal position
                 #dynamixel.write2ByteTxRx(self.port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_GOAL_POSITION, dxl_goal_position)
 
-                # Syncwrite goal position
-                dynamixel.groupSyncWriteTxPacket(self.group_num)
-                if dynamixel.getLastTxRxResult(self.port_num, PROTOCOL_VERSION) != COMM_SUCCESS:
-                    dynamixel.printTxRxResult(PROTOCOL_VERSION, dynamixel.getLastTxRxResult(self.port_num, PROTOCOL_VERSION))
+        # Syncwrite goal position
+        #dynamixel.groupSyncWriteTxPacket(self.speed)
+        dynamixel.groupSyncWriteTxPacket(self.group_num)
+        if dynamixel.getLastTxRxResult(self.port_num, PROTOCOL_VERSION) != COMM_SUCCESS:
+            dynamixel.printTxRxResult(PROTOCOL_VERSION, dynamixel.getLastTxRxResult(self.port_num, PROTOCOL_VERSION))
 
-                # Clear syncwrite parameter storage
-                dynamixel.groupSyncWriteClearParam(self.group_num)
+        # Clear syncwrite parameter storage
+        dynamixel.groupSyncWriteClearParam(self.group_num)
 
+
+    def MoveGripper(self, msg):
+        open_pos = 205
+        close_pos = 819
+        self.gripper_pos = int(msg.data * (close_pos - open_pos) + open_pos)
+
+        print("trying to move to ", self.gripper_pos)
 
 
 if __name__ == '__main__':
@@ -150,6 +168,8 @@ if __name__ == '__main__':
     sc.Initialize()
     rospy.Subscriber("joint_states", JointState, sc.MoveMotors)
     print("subscribed to /joint_states")
+    rospy.Subscriber("gripper_state", Float64, sc.MoveGripper)
+    print("subscribed to /gripper_state")
     #MoveAction(rospy.get_name())
     rospy.spin()
     sc.Destruct()
